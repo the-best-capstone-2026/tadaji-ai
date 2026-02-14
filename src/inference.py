@@ -36,30 +36,30 @@ def predict_from_bytes(
     }
     """
 
-    # 1️⃣ 전처리 설정 (계약 고정)
+    # 전처리 설정 (계약 고정)
     cfg = PreprocessConfig(
         image_size=224,
         mean=(0.485, 0.456, 0.406),
         std=(0.229, 0.224, 0.225),
     )
 
-    # 2️⃣ bytes → tensor [3,224,224]
+    # bytes → tensor [3,224,224]
     x = preprocess_bytes(image_bytes, cfg, mode="inference")
 
-    # 3️⃣ batch 차원 추가 → [1,3,224,224]
+    # batch 차원 추가 → [1,3,224,224]
     batch = make_batch(x, device=device)
 
-    # 4️⃣ 추론
+    # 추론
     model.eval()
     logits = model(batch)              # [1, 11]
     probs = F.softmax(logits, dim=1)   # [1, 11]
     probs = probs.squeeze(0)           # [11]
 
-    # 5️⃣ Top-K 추출
+    # Top-K 추출
     topk = min(topk, probs.numel())
     values, indices = torch.topk(probs, k=topk)
 
-    # 6️⃣ 결과 포맷팅
+    # 결과 포맷팅
     topk_result = []
     for v, i in zip(values, indices):
         topk_result.append(
